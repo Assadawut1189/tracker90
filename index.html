@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บันทึก 90 วัน — โฟกัสคือพลัง</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif Thai', Georgia, serif;
+    background: #faf8f3;
+    color: #1c1917;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  .container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+  /* Header */
+  header {
+    background: #fef3c7;
+    border-bottom: 2px solid #1c1917;
+    padding: 32px 0;
+    margin-bottom: 0;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #57534e;
+  }
+  h1 {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .day-num { color: #b45309; }
+  .day-total { color: #a8a29e; font-size: 32px; font-weight: 400; }
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e7e5e4;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #1c1917;
+    transition: width 0.7s ease;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #d6d3d1;
+    padding-top: 24px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #78716c;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: #1c1917;
+    color: #fef3c7;
+    margin-bottom: -1px;
+  }
+  .tab:hover:not(.active) { color: #1c1917; }
+
+  /* Content */
+  .content { padding: 32px 0; min-height: 60vh; }
+  .hidden { display: none; }
+
+  /* Streak */
+  .streak-section { margin-bottom: 32px; }
+  .label-small {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #78716c;
+    margin-bottom: 6px;
+  }
+  .streak-num {
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .streak-suffix {
+    font-size: 22px;
+    color: #a8a29e;
+    font-style: italic;
+    margin-left: 8px;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* Task cards */
+  .task {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 20px;
+    background: white;
+    border: 2px solid;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .task.amber { border-color: #b45309; }
+  .task.emerald { border-color: #047857; }
+  .task.rose { border-color: #be123c; }
+  .task.amber:hover { background: #fffbeb; }
+  .task.emerald:hover { background: #ecfdf5; }
+  .task.rose:hover { background: #fff1f2; }
+
+  .task.checked {
+    background: #1c1917 !important;
+    color: #fef3c7;
+    border-color: #1c1917 !important;
+  }
+
+  .task-row { display: flex; gap: 16px; align-items: flex-start; }
+  .checkbox {
+    width: 28px;
+    height: 28px;
+    border: 2px solid;
+    flex-shrink: 0;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .task.amber .checkbox { border-color: #b45309; }
+  .task.emerald .checkbox { border-color: #047857; }
+  .task.rose .checkbox { border-color: #be123c; }
+  .task.checked .checkbox {
+    background: #fef3c7;
+    border-color: #fef3c7;
+    color: #1c1917;
+  }
+
+  .task-content { flex: 1; }
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .task-title { font-size: 20px; font-weight: 700; }
+  .task.checked .task-title { text-decoration: line-through; opacity: 0.6; }
+  .task-priority {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .task.amber .task-priority { color: #b45309; }
+  .task.emerald .task-priority { color: #047857; }
+  .task.rose .task-priority { color: #be123c; }
+  .task.checked .task-priority { color: #a8a29e; }
+
+  .task-time { font-size: 14px; color: #78716c; margin-bottom: 6px; }
+  .task.checked .task-time { color: #a8a29e; }
+  .task-note {
+    font-size: 14px;
+    color: #57534e;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', 'Noto Serif Thai', serif;
+  }
+  .task.checked .task-note { color: #d6d3d1; }
+
+  /* Note area */
+  .note-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e7e5e4;
+  }
+  textarea {
+    width: 100%;
+    padding: 16px;
+    background: white;
+    border: 1px solid #d6d3d1;
+    font-family: inherit;
+    font-size: 15px;
+    color: #1c1917;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { outline: none; border-color: #1c1917; }
+
+  /* Complete banner */
+  .complete-banner {
+    margin-top: 24px;
+    padding: 24px;
+    background: #1c1917;
+    color: #fef3c7;
+  }
+  .complete-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #fde68a;
+    margin-bottom: 6px;
+  }
+  .complete-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .complete-quote {
+    font-size: 14px;
+    color: #d6d3d1;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    padding: 20px;
+    background: white;
+    border: 1px solid #d6d3d1;
+  }
+  .stat-num {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .stat-suffix {
+    font-size: 16px;
+    color: #a8a29e;
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  /* Calendar grid */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 4px;
+    margin: 16px 0;
+  }
+  .day-cell {
+    aspect-ratio: 1;
+    background: #e7e5e4;
+    cursor: help;
+  }
+  .day-cell.score-1 { background: #fde68a; }
+  .day-cell.score-2 { background: #fbbf24; }
+  .day-cell.score-3 { background: #1c1917; }
+  .day-cell.today { outline: 2px solid #b45309; outline-offset: 2px; }
+  .day-cell.past-incomplete { opacity: 0.4; }
+
+  .legend {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: #78716c;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-swatch { width: 12px; height: 12px; }
+
+  /* Rules */
+  .rule {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .rule-num {
+    font-size: 42px;
+    font-weight: 700;
+    color: #b45309;
+    line-height: 1;
+    font-family: 'Cormorant Garamond', serif;
+    flex-shrink: 0;
+  }
+  .rule-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .rule-body {
+    color: #57534e;
+    font-family: 'Cormorant Garamond', 'Noto Serif Thai', serif;
+    font-size: 16px;
+  }
+  .goals-box {
+    margin-top: 48px;
+    padding: 24px;
+    border: 2px solid #1c1917;
+    background: #fef3c7;
+  }
+  .goals-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #57534e;
+    margin-bottom: 8px;
+  }
+  .goals-list { list-style: none; }
+  .goals-list li { padding: 4px 0; }
+
+  /* Warning box */
+  .warning-box {
+    margin-top: 24px;
+    padding: 28px;
+    background: #1c1917;
+    color: #fef3c7;
+    border-left: 6px solid #b45309;
+  }
+  .warning-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #fbbf24;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .warning-intro {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #fef3c7;
+  }
+  .warning-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+  .warning-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #44403c;
+    font-size: 15px;
+    color: #e7e5e4;
+  }
+  .warning-list li:last-child { border-bottom: none; }
+  .warning-list strong {
+    color: #fbbf24;
+    font-weight: 700;
+  }
+  .quote-box {
+    background: #292524;
+    padding: 20px;
+    margin: 20px 0;
+    border-left: 3px solid #fbbf24;
+  }
+  .quote-line {
+    font-family: 'Cormorant Garamond', 'Noto Serif Thai', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #fde68a;
+    line-height: 1.5;
+    margin: 4px 0;
+  }
+  .warning-footer {
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #44403c;
+    letter-spacing: 0.05em;
+  }
+
+  /* Footer + buttons */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #a8a29e;
+    font-style: italic;
+  }
+  .reset-btn {
+    background: none;
+    border: none;
+    color: #a8a29e;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    margin-top: 16px;
+  }
+  .reset-btn:hover { color: #be123c; }
+
+  .export-btn {
+    background: white;
+    border: 1px solid #d6d3d1;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .export-btn:hover { background: #f5f5f4; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 40px; }
+    .streak-num { font-size: 64px; }
+    .calendar-grid { grid-template-columns: repeat(10, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <span>บันทึก 90 วัน</span>
+      <span id="dateRange">—</span>
+    </div>
+    <h1>วันที่ <span class="day-num" id="dayNum">1</span><span class="day-total"> / 90</span></h1>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="today">วันนี้</button>
+    <button class="tab" data-tab="stats">สถิติ</button>
+    <button class="tab" data-tab="rules">กฎ</button>
+  </div>
+
+  <!-- Today -->
+  <div class="content" id="tab-today">
+    <div class="streak-section">
+      <div class="label-small">เครื่องเล่นต่อเนื่อง</div>
+      <div><span class="streak-num" id="streakNum">0</span><span class="streak-suffix">วันติด</span></div>
+    </div>
+
+    <button class="task amber" data-task="draw">
+      <div class="task-row">
+        <div class="checkbox" id="check-draw"></div>
+        <div class="task-content">
+          <div class="task-header">
+            <div class="task-title">ฝึกวาดรูป</div>
+            <div class="task-priority">หลัก</div>
+          </div>
+          <div class="task-time">90 นาที</div>
+          <div class="task-note">รากฐานของทุกอย่าง — เกม, สติ๊กเกอร์, ธีมไลน์</div>
+        </div>
+      </div>
+    </button>
+
+    <button class="task emerald" data-task="novel">
+      <div class="task-row">
+        <div class="checkbox" id="check-novel"></div>
+        <div class="task-content">
+          <div class="task-header">
+            <div class="task-title">เขียนนิยาย</div>
+            <div class="task-priority">เงิน</div>
+          </div>
+          <div class="task-time">45 นาที</div>
+          <div class="task-note">เครื่องจักรหาเงิน — ลง ReadAWrite/Fictionlog</div>
+        </div>
+      </div>
+    </button>
+
+    <button class="task rose" data-task="shin">
+      <div class="task-row">
+        <div class="checkbox" id="check-shin"></div>
+        <div class="task-content">
+          <div class="task-header">
+            <div class="task-title">เจ้าชิน</div>
+            <div class="task-priority">พัก</div>
+          </div>
+          <div class="task-time">15 นาที</div>
+          <div class="task-note">พักสมอง สั้นๆ ก็พอ ไม่ต้องเครียด</div>
+        </div>
+      </div>
+    </button>
+
+    <div class="note-section">
+      <div class="label-small">บันทึกวันนี้</div>
+      <textarea id="dailyNote" placeholder="วันนี้ฝึกอะไร? เจออะไรยาก? รู้สึกยังไง?"></textarea>
+    </div>
+
+    <div class="complete-banner hidden" id="completeBanner">
+      <div class="complete-label">เสร็จสมบูรณ์</div>
+      <div class="complete-title">วันที่ <span id="completeDay">1</span> ผ่านแล้ว</div>
+      <div class="complete-quote">"การฝึกฝนเล็กๆ ทุกวัน ยิ่งใหญ่กว่าการทุ่มเทครั้งเดียวเสมอ"</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="content hidden" id="tab-stats">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label-small">เสร็จครบ 3 อย่าง</div>
+        <div><span class="stat-num" id="totalComplete">0</span><span class="stat-suffix">วัน</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label-small">อัตราสำเร็จ</div>
+        <div><span class="stat-num" id="successRate">0</span><span class="stat-suffix">%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label-small">วาดรูป</div>
+        <div><span class="stat-num" id="drawDays">0</span><span class="stat-suffix">วัน</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label-small">เขียนนิยาย</div>
+        <div><span class="stat-num" id="novelDays">0</span><span class="stat-suffix">วัน</span></div>
+      </div>
+    </div>
+
+    <div class="label-small">ภาพรวม 90 วัน</div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#e7e5e4"></div> ว่าง</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#fde68a"></div> 1</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#fbbf24"></div> 2</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#1c1917"></div> 3 (เต็ม)</div>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e7e5e4;">
+      <div class="label-small">สำรอง/นำเข้าข้อมูล</div>
+      <p style="font-size: 13px; color: #78716c; margin-bottom: 12px;">
+        ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น แนะนำให้กด "ส่งออก" เก็บไว้สำรอง
+      </p>
+      <button class="export-btn" id="exportBtn">📥 ส่งออกข้อมูล</button>
+      <button class="export-btn" id="importBtn">📤 นำเข้าข้อมูล</button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+      <br>
+      <button class="reset-btn" id="resetBtn">เริ่มต้นใหม่ (ลบข้อมูลทั้งหมด)</button>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="content hidden" id="tab-rules">
+    <div class="rule">
+      <div class="rule-num">01</div>
+      <div>
+        <div class="rule-title">โฟกัส 3 อย่าง</div>
+        <div class="rule-body">ไม่ใช่ 8 อย่างพร้อมกัน — สิ่งที่ไม่อยู่ในรายการนี้ พักไว้ก่อน 90 วัน</div>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">02</div>
+      <div>
+        <div class="rule-title">ทำทุกวัน ดีกว่าทำเยอะวันเดียว</div>
+        <div class="rule-body">วาด 90 นาทีทุกวัน ดีกว่า 10 ชั่วโมงวันเดียวแล้วหยุดอาทิตย์นึง</div>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">03</div>
+      <div>
+        <div class="rule-title">วัดเป็นตัวเลข ไม่ใช่ความรู้สึก</div>
+        <div class="rule-body">"วาดรูป 1 ภาพ" ไม่ใช่ "ฝึกวาดให้เก่ง"</div>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">04</div>
+      <div>
+        <div class="rule-title">ลงนิยายทันที ไม่ต้องสมบูรณ์แบบ</div>
+        <div class="rule-body">เขียน 1 ตอน → ลงเลย → เขียนตอนต่อไป ห้ามแก้ตอนเก่ามากกว่า 10 นาที</div>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">05</div>
+      <div>
+        <div class="rule-title">วันที่พลาด ไม่ใช่วันที่ล้มเหลว</div>
+        <div class="rule-body">พลาด 1 วัน = พรุ่งนี้กลับมาทำต่อ พลาด 2 วันติด = ห้าม กลับมาให้ได้</div>
+      </div>
+    </div>
+    <div class="rule">
+      <div class="rule-num">06</div>
+      <div>
+        <div class="rule-title">หลัง 90 วัน ค่อยขยาย</div>
+        <div class="rule-body">ตอนนั้นวาดรูปเป็นแล้ว → ค่อยเริ่มสติ๊กเกอร์/ธีมไลน์ ตอนนั้นมีคนอ่านนิยายแล้ว → ค่อยเริ่ม YouTube</div>
+      </div>
+    </div>
+
+    <div class="goals-box">
+      <div class="goals-label">เป้าหมายปลายทาง (วันที่ 90)</div>
+      <ul class="goals-list">
+        <li>→ วาดรูปได้ดีกว่าสติ๊กแมน (วาดตัวละครได้)</li>
+        <li>→ มีนิยายลง 1 เรื่อง อย่างน้อย 30 ตอน</li>
+        <li>→ เริ่มมีคนอ่านประจำ</li>
+        <li>→ มีรากฐานพอที่จะกลับไปทำเกม/สติ๊กเกอร์ได้จริง</li>
+      </ul>
+    </div>
+
+    <div class="warning-box">
+      <div class="warning-label">เตือนใจ — อ่านเมื่อใจสั่น</div>
+      <p class="warning-intro">90 วันนี้จะมีวันที่คุณ:</p>
+      <ul class="warning-list">
+        <li>เห็นคอร์สใหม่ที่ดูดีกว่า → <strong>อย่าซื้อ</strong></li>
+        <li>เห็นคนอื่นทำสติ๊กเกอร์ขายได้ → <strong>อย่าอิจฉา</strong></li>
+        <li>รู้สึกว่ามันช้าเกินไป → <strong>กลับมาอ่านข้อความนี้</strong></li>
+        <li>อยากเขียนนิยายเรื่องใหม่ทั้งที่เรื่องเก่ายังไม่จบ → <strong>ห้าม</strong></li>
+        <li>คิดว่า "พักวันเดียวคงไม่เป็นไร" → <strong>เป็นไร</strong></li>
+      </ul>
+      <div class="quote-box">
+        <p class="quote-line">"คนที่ขุดบ่อ 10 บ่อ ลึกบ่อละ 1 เมตร จะกระหายน้ำตาย"</p>
+        <p class="quote-line">"คนที่ขุดบ่อเดียว ลึก 10 เมตร จะเจอน้ำ"</p>
+      </div>
+      <p class="warning-footer">คุณเลือกขุดบ่อเดียวแล้ว — ขุดให้ลึก</p>
+    </div>
+  </div>
+
+  <div class="footer">— โฟกัสคือพลัง —</div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'tracker90_data';
+
+  // โหลดหรือสร้างข้อมูล
+  function loadData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    const newData = {
+      startDate: new Date().toISOString().split('T')[0],
+      days: {}
+    };
+    saveData(newData);
+    return newData;
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  let data = loadData();
+
+  function todayStr() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function getDayNum() {
+    const start = new Date(data.startDate);
+    const today = new Date(todayStr());
+    return Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+  }
+
+  function getTodayData() {
+    return data.days[todayStr()] || { draw: false, novel: false, shin: false, note: '' };
+  }
+
+  function render() {
+    const dayNum = getDayNum();
+    const today = getTodayData();
+
+    document.getElementById('dayNum').textContent = dayNum;
+    document.getElementById('progressFill').style.width = Math.min((dayNum / 90) * 100, 100) + '%';
+
+    // Date range
+    const start = new Date(data.startDate);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 89);
+    document.getElementById('dateRange').textContent = 
+      `${data.startDate} → ${end.toISOString().split('T')[0]}`;
+
+    // Tasks
+    ['draw', 'novel', 'shin'].forEach(t => {
+      const task = document.querySelector(`[data-task="${t}"]`);
+      const check = document.getElementById(`check-${t}`);
+      if (today[t]) {
+        task.classList.add('checked');
+        check.textContent = '✓';
+      } else {
+        task.classList.remove('checked');
+        check.textContent = '';
+      }
+    });
+
+    document.getElementById('dailyNote').value = today.note || '';
+
+    // Complete banner
+    const banner = document.getElementById('completeBanner');
+    if (today.draw && today.novel && today.shin) {
+      banner.classList.remove('hidden');
+      document.getElementById('completeDay').textContent = dayNum;
+    } else {
+      banner.classList.add('hidden');
+    }
+
+    // Streak
+    let streak = 0;
+    for (let i = 0; i < 90; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      const dd = data.days[ds];
+      if (dd && dd.draw && dd.novel && dd.shin) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+    document.getElementById('streakNum').textContent = streak;
+
+    // Stats
+    const allDays = Object.values(data.days);
+    const totalComplete = allDays.filter(d => d.draw && d.novel && d.shin).length;
+    document.getElementById('totalComplete').textContent = totalComplete;
+    document.getElementById('successRate').textContent = dayNum > 0 ? Math.round((totalComplete / dayNum) * 100) : 0;
+    document.getElementById('drawDays').textContent = allDays.filter(d => d.draw).length;
+    document.getElementById('novelDays').textContent = allDays.filter(d => d.novel).length;
+
+    // Calendar
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(data.startDate);
+      d.setDate(d.getDate() + i);
+      const ds = d.toISOString().split('T')[0];
+      const dd = data.days[ds];
+      const score = dd ? [dd.draw, dd.novel, dd.shin].filter(Boolean).length : 0;
+      const cell = document.createElement('div');
+      cell.className = `day-cell score-${score}`;
+      cell.title = `วันที่ ${i + 1}: ${score}/3`;
+      if (i + 1 === dayNum) cell.classList.add('today');
+      if (i + 1 < dayNum && score < 3) cell.classList.add('past-incomplete');
+      grid.appendChild(cell);
+    }
+  }
+
+  // Task toggling
+  document.querySelectorAll('.task').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.task;
+      const today = todayStr();
+      if (!data.days[today]) data.days[today] = { draw: false, novel: false, shin: false, note: '' };
+      data.days[today][t] = !data.days[today][t];
+      saveData(data);
+      render();
+    });
+  });
+
+  // Note saving
+  document.getElementById('dailyNote').addEventListener('input', (e) => {
+    const today = todayStr();
+    if (!data.days[today]) data.days[today] = { draw: false, novel: false, shin: false, note: '' };
+    data.days[today].note = e.target.value;
+    saveData(data);
+  });
+
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.remove('hidden');
+    });
+  });
+
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('เริ่มต้นใหม่ทั้งหมด? ข้อมูลเดิมจะหายหมด (แนะนำให้ส่งออกสำรองก่อน)')) {
+      data = {
+        startDate: todayStr(),
+        days: {}
+      };
+      saveData(data);
+      render();
+    }
+  });
+
+  // Export
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tracker90-backup-${todayStr()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Import
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (imported.startDate && imported.days) {
+          if (confirm('นำเข้าข้อมูลนี้? ข้อมูลปัจจุบันจะถูกแทนที่')) {
+            data = imported;
+            saveData(data);
+            render();
+            alert('นำเข้าสำเร็จ');
+          }
+        } else {
+          alert('ไฟล์ไม่ถูกต้อง');
+        }
+      } catch (err) {
+        alert('อ่านไฟล์ไม่ได้: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  render();
+</script>
+
+</body>
+</html>
